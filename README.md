@@ -6,6 +6,8 @@ This project demonstrates a complete Infrastructure-as-Code (IaC) and CI/CD work
 
 The website files are served by **Nginx** running in Docker containers on two GCP virtual machines, fronted by a **Cloudflare Load Balancer** for high availability.
 
+Link to the website: <https://www.typing-game.xyz/>.
+
 ---
 
 ### Architecture Overview
