@@ -59,6 +59,7 @@ jobs:
       - name: Input ip addresses to hosts.ini file (used by ansible)
         id: tf_output
         run: |
+          cd ..
           echo [webservers] >> hosts.ini
           echo "$(terraform output -raw vm1_ip)" >> hosts.ini
           echo "$(terraform output -raw vm2_ip)" >> hosts.ini
