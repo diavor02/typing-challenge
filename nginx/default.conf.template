@@ -1,0 +1,20 @@
+server {
+    listen 80;
+    server_name localhost;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location /health {
+        if ($http_x_health_check != ${X_HEALTH_CHECK_VALUE}) {
+            return 404;
+        }
+
+        default_type text/plain;
+        return 200 "OK\n";
+    }
+
+    # Serve frontend files
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}

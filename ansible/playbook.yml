@@ -1,0 +1,43 @@
+- name: Pull nginx image
+  hosts: webservers
+  become: true
+
+  roles:
+    - role: geerlingguy.docker
+
+  pre_tasks:
+    - name: Verify hosts are reachable
+      ansible.builtin.ping:
+  
+  tasks:
+    - name: Install Python
+      apt:
+        name:
+          - python3
+          - python3-pip
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Install Docker
+      ansible.builtin.pip:
+        name: docker
+
+    - name: Login into docker
+      community.docker.docker_login:
+        username: diavor171
+        password: "{{ lookup('env', 'DOCKER_PERSONAL_ACCESS_TOKEN') }}"
+
+    - name: Pull nginx image
+      community.docker.docker_image_pull:
+        name: diavor171/typing_challenge:latest
+
+    - name: Run the container
+      community.docker.docker_container:
+        name: server
+        image: diavor171/typing_challenge:latest
+        state: started
+        ports:
+          - "80:80"
+        env:
+          X_HEALTH_CHECK_VALUE: "{{ lookup('env', 'X_HEALTH_CHECK_VALUE') }}"
