@@ -1,1 +1,86 @@
+name: Deploy and configure the infrastructure
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./terraform
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Load ssh key (used by ansible)
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Download Cloudflare IP addresses
+        run: |
+          curl https://www.cloudflare.com/ips-v4/ > ips-v4.txt
+          curl https://www.cloudflare.com/ips-v6/ > ips-v6.txt
+
+      - name: Authenticate to GCP using a workload identity provider
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Plan
+        run: |
+          terraform plan \
+          -var="project_id=${{ secrets.PROJECT_ID }}" \
+          -var="region=${{ secrets.REGION }}" \
+          -var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+          -var="cloudflare_account_id=${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" \
+          -var="zone_id=${{ secrets.ZONE_ID }}" \
+          -var="x-health-check-value=${{ secrets.X_HEALTH_CHECK_VALUE }}" \
+          -out=tfplan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve tfplan
+
+      - name: Input ip addresses to hosts.ini file (used by ansible)
+        id: tf_output
+        run: |
+          echo [webservers] >> hosts.ini
+          echo "$(terraform output -raw vm1_ip)" >> hosts.ini
+          echo "$(terraform output -raw vm2_ip)" >> hosts.ini
+          echo [all:vars] >> hosts.ini
+          echo ansible_user=${{ secrets.ANSIBLE_USER }} >> hosts.ini 
+
+      - name: Install ansible dependencies
+        run: |
+          ansible-galaxy role install geerlingguy.docker
+          ansible-galaxy collection install community.docker
+
+      - name: Run ansible playbook
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+        run: |
+          export X_HEALTH_CHECK_VALUE=${{ secrets.X_HEALTH_CHECK_VALUE }}
+          export DOCKER_PERSONAL_ACCESS_TOKEN=${{ secrets.DOCKER_PERSONAL_ACCESS_TOKEN }}
+          ansible-playbook ~/work/game/game/ansible/playbook.yml \
+            -i hosts.ini \
+            --private-key ~/.ssh/id_rsa \
+
+
+
+
 
