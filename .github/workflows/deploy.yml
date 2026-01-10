@@ -59,12 +59,12 @@ jobs:
       - name: Input ip addresses to hosts.ini file (used by ansible)
         id: tf_output
         run: |
-          cd ..
           echo [webservers] >> hosts.ini
           echo "$(terraform output -raw vm1_ip)" >> hosts.ini
           echo "$(terraform output -raw vm2_ip)" >> hosts.ini
           echo [all:vars] >> hosts.ini
           echo ansible_user=${{ secrets.ANSIBLE_USER }} >> hosts.ini 
+          mv hosts.ini ..
 
       - name: Install ansible dependencies
         run: |
@@ -78,7 +78,6 @@ jobs:
           export X_HEALTH_CHECK_VALUE=${{ secrets.X_HEALTH_CHECK_VALUE }}
           export DOCKER_PERSONAL_ACCESS_TOKEN=${{ secrets.DOCKER_PERSONAL_ACCESS_TOKEN }}
           cd ..
-          cat hosts.ini
           ansible-playbook ./ansible/playbook.yml \
             -i hosts.ini \
             --private-key ~/.ssh/id_rsa \
