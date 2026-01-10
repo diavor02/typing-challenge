@@ -76,7 +76,7 @@ jobs:
         run: |
           export X_HEALTH_CHECK_VALUE=${{ secrets.X_HEALTH_CHECK_VALUE }}
           export DOCKER_PERSONAL_ACCESS_TOKEN=${{ secrets.DOCKER_PERSONAL_ACCESS_TOKEN }}
-          ansible-playbook ~/work/game/game/ansible/playbook.yml \
+          ansible-playbook ./ansible/playbook.yml \
             -i hosts.ini \
             --private-key ~/.ssh/id_rsa \
 
