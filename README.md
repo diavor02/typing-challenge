@@ -1,6 +1,6 @@
 # Typing game
 
-## Static Website Deployment with Terraform, Ansible, Docker, and Cloudflare
+## Static Website Deployment with Terraform, Ansible, Docker, Nginx, and Cloudflare
 
 This project demonstrates a complete Infrastructure-as-Code (IaC) and CI/CD workflow to deploy a static website using **Terraform**, **Ansible**, **Docker**, and **Cloudflare Load Balancing** on **Google Cloud Platform (GCP)**.
 
