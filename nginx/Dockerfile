@@ -11,5 +11,4 @@ COPY /dist /usr/share/nginx/html
 
 EXPOSE 80
 
-RUN envsubst '${X_HEALTH_CHECK_VALUE}' < /etc/nginx/templates/default.conf.template
 CMD ["nginx", "-g", "daemon off;"]
