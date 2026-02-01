@@ -12,7 +12,7 @@ resource "cloudflare_load_balancer_monitor" "http" {
 
   expected_codes = "200"
 
-  header = {
+  header {
     header = "X-Health-Check"
     values = [ var.x-health-check-value ]
   }
@@ -24,17 +24,17 @@ resource "cloudflare_load_balancer_pool" "app_pool" {
   enabled    = true
   monitor    = cloudflare_load_balancer_monitor.http.id
 
-  origins = [{
+  origins {
     name    = "vm-1"
     address = google_compute_address.vm_static_ip["vm1"].address
     enabled = true
-  },
-  {
+  }
+
+  origins {
     name    = "vm-2"
     address = google_compute_address.vm_static_ip["vm2"].address
     enabled = true
   }
-  ]
 
   depends_on = [
     cloudflare_load_balancer_monitor.http
@@ -45,8 +45,8 @@ resource "cloudflare_load_balancer_pool" "app_pool" {
 resource "cloudflare_load_balancer" "app_lb" {
   zone_id = var.zone_id
 
-  default_pools = [cloudflare_load_balancer_pool.app_pool.id]
-  fallback_pool = cloudflare_load_balancer_pool.app_pool.id
+  default_pool_ids = [cloudflare_load_balancer_pool.app_pool.id]
+  fallback_pool_id = cloudflare_load_balancer_pool.app_pool.id
 
   name = "www.typing-game.xyz"
   
