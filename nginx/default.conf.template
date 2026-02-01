@@ -4,7 +4,8 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
-    location /health {
+    location = /health {
+        access_log off;
         if ($http_x_health_check != ${X_HEALTH_CHECK_VALUE}) {
             return 404;
         }
